@@ -1,0 +1,91 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  STUDENT
+  LECTURER
+}
+
+enum Level {
+  HUNDRED
+  TWO_HUNDRED
+  THREE_HUNDRED
+  FOUR_HUNDRED
+  FIVE_HUNDRED
+}
+
+enum Semester {
+  FIRST
+  SECOND
+}
+
+enum Course {
+  COMPUTER_SCIENCE
+  SOFTWARE_ENGINEERING
+  COMPUTER_TECHNOLOGY
+  COMPUTER_INFORMATION_SYSTEM
+  INFORMATION_TECHNOLOGY
+}
+
+model User {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  firstName    String
+  lastName     String
+  username     String   @unique
+  email        String   @unique
+  password     String?
+  currentLevel Level?
+  semester     Semester
+  course       Course
+  role         Role
+
+  meetingId String?
+  meeting   Meeting? @relation(fields: [meetingId], references: [meetingId])
+
+  messages Message[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt()
+}
+
+model Meeting {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  name            String
+  meetingTime     DateTime
+  meetingId       String   @unique @map(name: "meeting_id")
+  meetingDuration DateTime @map(name: "meeting_duration")
+
+  users User[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Conversation {
+  id       String    @id @default(auto()) @map("_id") @db.ObjectId
+  members  String[]  @db.ObjectId
+  messages Message[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Message {
+  id             String @id @default(auto()) @map("_id") @db.ObjectId
+  senderId       String @db.ObjectId
+  recieverId     String @db.ObjectId
+  message        String
+  conversationId String @db.ObjectId
+
+  user         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
