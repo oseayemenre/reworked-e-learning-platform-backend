@@ -109,4 +109,19 @@ export class AuthRepository implements IAuthRepository {
       },
     });
   }
+
+  public async updateUser(data: {
+    user: string;
+    password: string;
+  }): Promise<void> {
+    await this.prisma.user.update({
+      where: {
+        email: data.user,
+      },
+
+      data: {
+        password: data.password,
+      },
+    });
+  }
 }

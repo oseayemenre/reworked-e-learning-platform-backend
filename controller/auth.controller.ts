@@ -1,9 +1,14 @@
 import { Request, Response } from "express";
 import { IAuthService } from "../interface/auth.interface";
 import { inject } from "inversify";
-import { controller, httpGet, httpPost } from "inversify-express-utils";
-import { AuthMiddleWare } from "../middleware/auth.middleware";
+import {
+  controller,
+  httpGet,
+  httpPatch,
+  httpPost,
+} from "inversify-express-utils";
 import { INTERFACE_TYPE } from "../utils/constants";
+import { AuthMiddleWare } from "../middleware/auth.middleware";
 
 @controller("/auth")
 export class AuthController {
@@ -49,11 +54,29 @@ export class AuthController {
     }
   }
 
-  @httpGet(
-    "/private-route",
+  @httpPatch(
+    "/update-password",
     new AuthMiddleWare().privateRoute.bind(new AuthMiddleWare())
   )
-  public async PrivateRoute(req: Request, res: Response) {
-    res.send("Private route");
+  public async updatePassword(req: Request, res: Response) {
+    try {
+      const user = req.user?.email as string;
+      const response = await this.service.onUpdatePassword(req.body, user);
+
+      return res.status(response.statusCode).json(response.body);
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  @httpGet("/logout")
+  public async logout(req: Request, res: Response) {
+    res.cookie("access_token", "");
+    res.cookie("refresh_token", "");
+
+    return res.status(200).json({
+      status: "success",
+      message: "User succesfully logged out",
+    });
   }
 }

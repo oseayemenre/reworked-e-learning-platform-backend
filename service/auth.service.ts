@@ -12,7 +12,11 @@ import {
   IAuthLoginAccountResponse,
 } from "../interface/auth.interface";
 
-import { CreateAccountSchema, LoginSchema } from "../schema/auth.schema";
+import {
+  CreateAccountSchema,
+  LoginSchema,
+  UpdatePasswordSchema,
+} from "../schema/auth.schema";
 
 import { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } from "../utils/secret";
 
@@ -36,6 +40,7 @@ export class AuthService implements IAuthService {
       (this.bcrypt = bcrypt),
       (this.jwt = jwt);
   }
+
   public async onLogin(
     data: IAuthLoginAccountParameters
   ): Promise<IAuthLoginAccountResponse> {
@@ -167,6 +172,52 @@ export class AuthService implements IAuthService {
         status: "success",
         message: "User succesfully created",
         data: { ...userData, access_token: token },
+      },
+    };
+  }
+
+  public async onUpdatePassword(
+    data: {
+      password: string;
+    },
+    user: string
+  ): Promise<IAuthCreateAccountResponse> {
+    const valid = this.validator.validateData(data, UpdatePasswordSchema);
+
+    if (!valid)
+      return {
+        statusCode: 400,
+        body: {
+          status: "fail",
+          message: "Input could not be validated",
+        },
+      };
+
+    const searchUser = await this.repository.findUser({ email: user });
+
+    const passwordUsed = await this.bcrypt.confirmPassword(
+      data.password,
+      searchUser?._password as string
+    );
+
+    if (passwordUsed)
+      return {
+        statusCode: 409,
+        body: {
+          status: "fail",
+          message: "Password has already been used by you before",
+        },
+      };
+
+    const hashedPassword = await this.bcrypt.hash(data.password);
+
+    await this.repository.updateUser({ user: user, password: hashedPassword });
+
+    return {
+      statusCode: 200,
+      body: {
+        status: "success",
+        message: "User password has been updated",
       },
     };
   }

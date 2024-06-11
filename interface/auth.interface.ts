@@ -65,6 +65,11 @@ export interface IAuthService {
   onLogin(
     data: IAuthLoginAccountParameters
   ): Promise<IAuthLoginAccountResponse>;
+
+  onUpdatePassword(
+    data: IAuthUpdateAccountParameters,
+    user: string
+  ): Promise<IAuthCreateAccountResponse>;
 }
 
 export interface IAuthRepositoryFindUserParameters {
@@ -76,11 +81,17 @@ export interface IAuthRepositoryFindUserParameters {
 export interface IAuthRepository {
   findUser(data: IAuthRepositoryFindUserParameters): Promise<UserEntity | null>;
   createUser(data: IAuthCreateAccountParameters): Promise<void>;
+  updateUser(data: { user: string; password: string }): Promise<void>;
+}
+
+export interface IAuthUpdateAccountParameters {
+  password: string;
 }
 
 type IValidatorParameters =
   | IAuthCreateAccountParameters
-  | IAuthLoginAccountParameters;
+  | IAuthLoginAccountParameters
+  | IAuthUpdateAccountParameters;
 
 export interface IValidator {
   validateData(data: IValidatorParameters, schema: Zod.Schema): boolean;
