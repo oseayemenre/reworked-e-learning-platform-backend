@@ -16,7 +16,6 @@ import { Validator } from "./utils/validator";
 import { AuthService } from "./service/auth.service";
 import { AuthRepository } from "./repository/auth.repository";
 
-import "./controller/auth.controller";
 import {
   IAuthRepository,
   IAuthService,
@@ -26,6 +25,20 @@ import {
 } from "./interface/auth.interface";
 
 import { INTERFACE_TYPE } from "./utils/constants";
+import { UserService } from "./service/user.service";
+import { IUserService } from "./interface/user.interface";
+import {
+  IMeetingRepository,
+  IMeetingService,
+  IUUID,
+} from "./interface/meeting.interface";
+import { MeetingService } from "./service/meeting.service";
+import { MeetingRepository } from "./repository/meeting.repository";
+import { UUID } from "./utils/uuid";
+
+import "./controller/auth.controller";
+import "./controller/user.controller";
+import "./controller/meeting.controller";
 
 export class Application {
   private readonly container;
@@ -46,6 +59,16 @@ export class Application {
     this.container
       .bind<IAuthRepository>(INTERFACE_TYPE.AUTHREPOSITORY)
       .to(AuthRepository);
+    this.container
+      .bind<IUserService>(INTERFACE_TYPE.USERSERVICE)
+      .to(UserService);
+    this.container
+      .bind<IMeetingService>(INTERFACE_TYPE.MEETINGSERVICE)
+      .to(MeetingService);
+    this.container
+      .bind<IMeetingRepository>(INTERFACE_TYPE.MEETINGREPOSITORY)
+      .to(MeetingRepository);
+    this.container.bind<IUUID>(INTERFACE_TYPE.UUID).to(UUID);
 
     this.server.setConfig((app) => {
       app.use(cors());

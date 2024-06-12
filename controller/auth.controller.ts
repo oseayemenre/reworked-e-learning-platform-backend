@@ -21,6 +21,7 @@ export class AuthController {
   @httpPost("/create-account")
   public async createAccount(req: Request, res: Response) {
     try {
+      console.log(req.body);
       const response = await this.service.onCreateAccount(req.body);
 
       res.cookie("access_token", response.body.data?.access_token, {
@@ -69,7 +70,10 @@ export class AuthController {
     }
   }
 
-  @httpGet("/logout")
+  @httpGet(
+    "/logout",
+    new AuthMiddleWare().privateRoute.bind(new AuthMiddleWare())
+  )
   public async logout(req: Request, res: Response) {
     res.cookie("access_token", "");
     res.cookie("refresh_token", "");

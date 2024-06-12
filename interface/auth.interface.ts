@@ -1,4 +1,5 @@
 import { UserEntity } from "../entity/auth.entity";
+import { IMeetingServiceOnCreateMeetingParams } from "./meeting.interface";
 
 export interface IAuthCreateAccountParameters {
   email: string;
@@ -91,7 +92,8 @@ export interface IAuthUpdateAccountParameters {
 type IValidatorParameters =
   | IAuthCreateAccountParameters
   | IAuthLoginAccountParameters
-  | IAuthUpdateAccountParameters;
+  | IAuthUpdateAccountParameters
+  | IMeetingServiceOnCreateMeetingParams;
 
 export interface IValidator {
   validateData(data: IValidatorParameters, schema: Zod.Schema): boolean;
