@@ -1,7 +1,9 @@
 import { PrismaClient } from "@prisma/client";
 import { MeetingEntity } from "../entity/meeting.entity";
 import { IMeetingRepository } from "../interface/meeting.interface";
+import { injectable } from "inversify";
 
+@injectable()
 export class MeetingRepository implements IMeetingRepository {
   private readonly prisma;
 

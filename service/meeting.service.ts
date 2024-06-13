@@ -1,4 +1,4 @@
-import { inject } from "inversify";
+import { inject, injectable } from "inversify";
 import { IValidator } from "../interface/auth.interface";
 import {
   IMeetingRepository,
@@ -11,6 +11,7 @@ import { INTERFACE_TYPE } from "../utils/constants";
 import { CreateMeetingSchema } from "../schema/meeting.schema";
 import { MeetingEntity } from "../entity/meeting.entity";
 
+@injectable()
 export class MeetingService implements IMeetingService {
   private readonly validator;
   private readonly repository;
@@ -45,10 +46,11 @@ export class MeetingService implements IMeetingService {
       data.meetingDuration.split(/s+/)[0]
     );
 
-    let metingDurationFormatted: Date;
+    let meetingDurationFormatted: Date;
     let meetingTimeFormatted: Date;
     let meetingData: MeetingEntity;
     let response: IOnCreateMeetingResponse | null = null;
+    let meeting: MeetingEntity | null = null;
 
     const meetingDurationTime =
       data.meetingDuration.split(/s+/)[
@@ -57,7 +59,7 @@ export class MeetingService implements IMeetingService {
 
     switch (meetingDurationTime) {
       case "minutes":
-        metingDurationFormatted = new Date(
+        meetingDurationFormatted = new Date(
           new Date(data.meetingTime).setMinutes(
             new Date(data.meetingTime).getMinutes() + meetingDurationToNumber
           )
@@ -69,10 +71,69 @@ export class MeetingService implements IMeetingService {
           _name: data.name,
           _meetingTime: meetingTimeFormatted,
           _meetingId: this.uuid.createId(),
-          _meetingDuration: metingDurationFormatted,
+          _meetingDuration: meetingDurationFormatted,
         };
 
-        const meeting = await this.repository.createMeeting(meetingData, user);
+        meeting = await this.repository.createMeeting(meetingData, user);
+
+        response = {
+          statusCode: 201,
+          body: {
+            status: "success",
+            message: "Meeting succesfuly created",
+            data: meeting,
+          },
+        };
+
+        break;
+
+      case "seconds":
+        meetingDurationFormatted = new Date(
+          new Date(data.meetingTime).setSeconds(
+            new Date(data.meetingTime).getSeconds() + meetingDurationToNumber
+          )
+        );
+
+        meetingTimeFormatted = new Date(data.meetingTime);
+
+        meetingData = {
+          _name: data.name,
+          _meetingTime: meetingTimeFormatted,
+          _meetingId: this.uuid.createId(),
+          _meetingDuration: meetingDurationFormatted,
+        };
+
+        meeting = await this.repository.createMeeting(meetingData, user);
+
+        response = {
+          statusCode: 201,
+          body: {
+            status: "success",
+            message: "Meeting succesfuly created",
+            data: meeting,
+          },
+        };
+        break;
+
+      case "hours":
+        meetingDurationFormatted = new Date(
+          new Date(data.meetingTime).setHours(
+            new Date(data.meetingTime).getHours() + meetingDurationToNumber
+          )
+        );
+
+        meetingTimeFormatted = new Date(data.meetingTime);
+
+        meetingData = {
+          _name: data.name,
+          _meetingTime: meetingTimeFormatted,
+          _meetingId: this.uuid.createId(),
+          _meetingDuration: meetingDurationFormatted,
+        };
+
+        meeting = await this.repository.createMeeting(meetingData, user);
+
+        meeting = await this.repository.createMeeting(meetingData, user);
 
         response = {
           statusCode: 201,
@@ -85,6 +146,15 @@ export class MeetingService implements IMeetingService {
 
         break;
     }
+
+    if (!meeting)
+      return {
+        statusCode: 400,
+        body: {
+          status: "failed",
+          message: "Meeting could not be created",
+        },
+      };
 
     return response as IOnCreateMeetingResponse;
   }

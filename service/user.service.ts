@@ -1,4 +1,4 @@
-import { inject } from "inversify";
+import { inject, injectable } from "inversify";
 import { IAuthRepository } from "../interface/auth.interface";
 import {
   IUserService,
@@ -6,6 +6,7 @@ import {
 } from "../interface/user.interface";
 import { INTERFACE_TYPE } from "../utils/constants";
 
+@injectable()
 export class UserService implements IUserService {
   private readonly repository;
 
